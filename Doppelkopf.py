@@ -70,7 +70,7 @@ class Kartenspiel:
 
 class DokoSpiel:
     
-    def __init__(self, spieler_1, spieler_2, spieler_3, spieler_4) -> None:
+    def __init__(self, spieler_1, spieler_2, spieler_3, spieler_4, verbose = False) -> None:
         Karten = Kartenspiel()
         a, b, c, d = Karten.geben()
         l = [a,b,c,d]
@@ -80,6 +80,7 @@ class DokoSpiel:
             s.set_spielreferenz(self)
         self.aktueller_stich = []
         self.alle_stiche = []
+        self.verbose = verbose
 
     def get_aktueller_stich(self):
         return self.aktueller_stich
@@ -95,14 +96,14 @@ class DokoSpiel:
 
     def spielen(self):
         for i in range(1,13):
-            print(f"{i}. Stich:".format())
+            if self.verbose: print(f"{i}. Stich:".format())
             for s in self.spieler:
-                self.aktueller_stich.append(s.spielen())
+                self.aktueller_stich.append(s.spielen(verbose = self.verbose))
             # Stich auswerten, Punkte verteilen, neue Reihenfolge festlegen
             wert_aktueller_stich = sum(self.aktueller_stich)
             # Gewinner des Stichs ermitteln
             gewinner_id = self.wer_bekommt_den_stich()
-            print(f"Der {i}. Stich hat eine Augenzahl von {wert_aktueller_stich}, Spieler {self.spieler[gewinner_id].name} gewinnt den Stich.".format())
+            if self.verbose: print(f"Der {i}. Stich hat eine Augenzahl von {wert_aktueller_stich}, Spieler {self.spieler[gewinner_id].name} gewinnt den Stich.".format())
             # Augen dem Gewinner gutschreiben:
             self.spieler[gewinner_id].augen += wert_aktueller_stich
             # neue Zugreihenfolge festlegen:
@@ -121,8 +122,19 @@ class DokoSpiel:
             else:
                 kontra += self.spieler[i].augen
         sieger, siegpunkte = self.sieger_ermitteln(re, kontra)
-        print(f"Spieler {self.spieler[0].name}: {self.spieler[0].augen}, Spieler {self.spieler[1].name}: {self.spieler[1].augen}, Spieler {self.spieler[2].name}: {self.spieler[2].augen}, Spieler {self.spieler[3].name}: {self.spieler[3].augen}".format())
-        print(f"Re-Partei: {re} Augen, Kontra: {kontra} Augen, es gewinnt {sieger} mit {siegpunkte} Punkten.".format())
+        if self.verbose: 
+            print(f"Spieler {self.spieler[0].name}: {self.spieler[0].augen}, Spieler {self.spieler[1].name}: {self.spieler[1].augen}, Spieler {self.spieler[2].name}: {self.spieler[2].augen}, Spieler {self.spieler[3].name}: {self.spieler[3].augen}".format())
+            print(f"Re-Partei: {re} Augen, Kontra: {kontra} Augen, es gewinnt {sieger} mit {siegpunkte} Punkten.".format())
+        if sieger == "Re":
+            for i in range(0,4):
+                if self.spieler[i].re_partei:
+                    self.spieler[i].punkte  = siegpunkte
+            return siegpunkte, 0
+        else:
+            for i in range(0,4):
+                if not self.spieler[i].re_partei:
+                    self.spieler[i].punkte  = siegpunkte
+            return 0, siegpunkte
 
     def wer_bekommt_den_stich(self) -> int:
         # Farb oder Trumpfstich?:
@@ -152,6 +164,7 @@ class Spieler:
         self.name = name
         self.augen = 0
         self.re_partei = False
+        self.punkte = 0
 
     def karten_aufnehmen(self, karten):
         self.handkarten = karten
@@ -164,13 +177,13 @@ class Spieler:
     def set_spielreferenz(self, spiel: DokoSpiel) -> None:
         self.spiel = spiel
 
-    def spielen(self) -> Karte:
+    def spielen(self, verbose = False) -> Karte:
         # legale Karten ermitteln:
         legale_karten = self.legale_karten_ermitteln()
         # spiele eine zufällige legale Karte:
         id = random.randint(1, len(legale_karten)) - 1 
         karte = legale_karten[id]
-        print(self.name, karte)
+        if verbose: print(self.name, karte)
         self.karte_spielen(karte)
         return karte
 
@@ -191,6 +204,33 @@ class Spieler:
 
     def __repr__(self) -> str:
         return str(self.handkarten)
+
+class Strategie_Spieler(Spieler):
+
+    def __init__(self, name) -> None:
+        super().__init__(name)
+
+    def spielen(self, verbose = False):
+        # legale Karten ermitteln:
+        legale_karten = self.legale_karten_ermitteln()
+        # spiele höchste Karte
+        karte = legale_karten[-1]
+        if verbose: print(self.name, karte)
+        self.karte_spielen(karte)
+        return karte
+
+class Menschlicher_Spieler(Spieler):
+
+    def __init__(self, name) -> None:
+        super().__init__(name)
+    
+    def spielen(self, verbose=False) -> Karte:
+        print(self.handkarten)
+        id = int(input())
+        karte = self.handkarten[id]
+        print(self.name, karte)
+        self.karte_spielen(karte=karte)
+        return karte
 
 class environment:
 
