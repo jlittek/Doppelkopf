@@ -2,6 +2,8 @@ from functools import total_ordering
 from math import ceil
 import random
 import numpy as np
+from keras.models import load_model
+
 
 global namen 
 namen = {1: 'Herz 9', 2: 'Herz König', 3: 'Herz Ass', 4: 'Pik 9', 5: 'Pik König', 
@@ -20,7 +22,6 @@ augenzahlen = {1: 0, 2: 4, 3: 11, # Herz
                 16: 2, 17: 2, 18: 2, 19: 2, # Buben
                 20: 3, 21: 3, 22: 3, 23: 3, # Damen
                 24: 10} # Herz 10
-
 
 @total_ordering
 class Karte:
@@ -81,6 +82,8 @@ class DokoSpiel:
         self.aktueller_stich = []
         self.alle_stiche = []
         self.verbose = verbose
+        self.zustand = np.zeros((24*4+1, 12))
+
 
     def get_aktueller_stich(self):
         return self.aktueller_stich
@@ -95,10 +98,26 @@ class DokoSpiel:
             self.aktueller_stich = []
 
     def spielen(self):
+
+        # eventuelle Punkte aus vorigen Runden löschen:
+        for s in self.spieler:
+            s.punkte = 0
+            s.augen = 0
+
         for i in range(1,13):
             if self.verbose: print(f"{i}. Stich:".format())
+            # Runde in Zustand aktualisieren:
+            self.zustand[0] = np.identity(12)[i-1]
+
             for s in self.spieler:
-                self.aktueller_stich.append(s.spielen(verbose = self.verbose))
+                karte = s.spielen(verbose = self.verbose)
+                self.aktueller_stich.append(karte)
+                # gespielte Karten in Zustand aktualisieren:
+                i2 = self.spieler.index(s)
+                j = np.argmax(self.zustand[0])
+                neu = np.zeros(24)
+                neu[karte.id-1] = 1
+                self.zustand[i2*24+1:i2*24+24+1, j] = neu
             # Stich auswerten, Punkte verteilen, neue Reihenfolge festlegen
             wert_aktueller_stich = sum(self.aktueller_stich)
             # Gewinner des Stichs ermitteln
@@ -113,6 +132,16 @@ class DokoSpiel:
             self.alle_stiche.append(self.aktueller_stich)
             self.aktueller_stich = []
 
+            # für alle lernenden Spieler Reward zurückgeben, um deren Gewichte anpassen zu können
+            # for s in self.spieler:
+            #     if type(s).__name__ == "Lernender_Spieler":
+            #         if self.spieler.index(s) == gewinner_id:
+            #             s.update(wert_aktueller_stich)
+            #         else:
+            #             s.update(0)
+
+
+
         # Ende des Spiels, Punkte zusammenzählen:
         re = 0
         kontra = 0
@@ -125,16 +154,36 @@ class DokoSpiel:
         if self.verbose: 
             print(f"Spieler {self.spieler[0].name}: {self.spieler[0].augen}, Spieler {self.spieler[1].name}: {self.spieler[1].augen}, Spieler {self.spieler[2].name}: {self.spieler[2].augen}, Spieler {self.spieler[3].name}: {self.spieler[3].augen}".format())
             print(f"Re-Partei: {re} Augen, Kontra: {kontra} Augen, es gewinnt {sieger} mit {siegpunkte} Punkten.".format())
+        
+        # Spiel zurücksetzen:
+        self.__init__(self.spieler[0], self.spieler[1],self.spieler[2],self.spieler[3], self.verbose)
+
         if sieger == "Re":
             for i in range(0,4):
                 if self.spieler[i].re_partei:
                     self.spieler[i].punkte  = siegpunkte
-            return siegpunkte, 0
+                else:
+                    self.spieler[i].punkte = -siegpunkte
+                if type(self.spieler[i]).__name__ == "Lernender_Spieler":
+                    self.spieler[i].update()
+                    self.spieler[i].modell_speichern()
+
+            return siegpunkte, -siegpunkte
         else:
             for i in range(0,4):
                 if not self.spieler[i].re_partei:
                     self.spieler[i].punkte  = siegpunkte
-            return 0, siegpunkte
+                else:
+                    self.spieler[i].punkte = -siegpunkte
+                if type(self.spieler[i]).__name__ == "Lernender_Spieler":
+                    self.spieler[i].update()
+                    self.spieler[i].modell_speichern()
+                    
+
+            return -siegpunkte, siegpunkte
+
+
+
 
     def wer_bekommt_den_stich(self) -> int:
         # Farb oder Trumpfstich?:
@@ -157,6 +206,15 @@ class DokoSpiel:
             return "Re", ceil(re / 30 - 4)
         else:
             return "Kontra", ceil(kontra / 30 - 4) + 1 # +1 "gegen die Alten"
+
+    def get_zustand(self, spieler):
+        zustand = self.zustand
+        karten = spieler.handkarten
+        karten_als_array = np.zeros(24)
+        for k in karten:
+            karten_als_array[k.id-1] += 1
+        
+        return np.append(zustand, karten_als_array.reshape((2,12)))
 
 class Spieler:
 
@@ -232,76 +290,75 @@ class Menschlicher_Spieler(Spieler):
         self.karte_spielen(karte=karte)
         return karte
 
-class environment:
+class Lernender_Spieler(Spieler):
+    
+    def __init__(self, name, path='path/to/location/of/model', wkeit_zufallszug=0.25) -> None:
+        # Model laden
+        self.model = load_model(path)
+        self.path = path
+        self.zufallszug = wkeit_zufallszug
+        self.trajektorie = [] # Liste mit Zustand in jedem Zug, Vorhersage und ausgewählter Aktion
+        super().__init__(name)
 
-    def __init__(self) -> None:
-        self.state = np.zeros((12*4+2+1, 12))
-        self.done = False
-        self.current_round = 0
-        self.all_tricks = []
-        self.current_trick = []
+    def spielen(self, verbose=False) -> Karte:
 
-    def step(self, action):
-        player_id = action.player_id
-        card_to_play = action.card_to_play
-        hand_cards = action.hand_cards
+        legale_karten = self.legale_karten_ermitteln()
+        # erhalte aktuellen Zustand
+        zustand = self.spiel.get_zustand(self)
+        # bekomme von Model Vorhersage für jede Aktion
+        vorhersage = self.model.predict(zustand.reshape((1,1,(4*24+3)*12))).reshape(24)
+        # mit Wahrscheinlichkeit self.zufallszug spiele zufällige Karte:
+        if random.random() < self.zufallszug:
+            id = random.randint(1, len(legale_karten)) - 1 
+            karte = legale_karten[id]
+            if verbose: print(self.name, karte)
+            self.karte_spielen(karte)
+            # erweitere Trajektorie
+            self.trajektorie.append([zustand, vorhersage, karte.id])
+            return karte
+        else:
+            vorhersage_kopie = vorhersage
+            # print(vorhersage)
+            # wähle legale Aktion mit maximalem Reward in der Vorhersage 
+            while not Karte(np.argmax(vorhersage)+1) in legale_karten:
+                vorhersage[np.argmax(vorhersage)] = -9999
+            karte = Karte(np.argmax(vorhersage)+1)
+            self.karte_spielen(karte)
+            if verbose: print(self.name, karte)
+            # erweitere Trajektorie:
+            self.trajektorie.append([zustand, vorhersage_kopie, karte.id])
+            return karte
 
-        reward = 0
-        if len(self.current_trick) == 4:
-            self.current_trick = []
+    def update(self):
+        # update Model mit dem Reward und der zuvor ausgeführten Aktion
+        # y = self.letzte_vorhersage
+        # y[self.letzte_aktion - 1] = reward
+        # self.model.fit(self.letzter_zustand.reshape(1,1,(24*4+3)*12), y.reshape(1,1,24))
 
-        # action is a 24 x 1 array, wich indicates which card should be played
-        # state is a (24*4 + 2 + 1) x 12 array giving information about all played 
-        # cards of all players and the remaining own cards and the current round
+        # neu: update nach dem Spiel für alle Züge
+        #  i. Stich  wird belohnt mit:
+        # reward = augen_i/30 * 0.5^i + siegpunkte * 1/0.5^i
+        # oder
+        # reward = augen_i/30 * (1 - i/12) + siegpunkte * i/12
+        # oder 
+        # reward = augen_i *  0.9^i + siegpunkte * 0.9^(12-i)
+        # oder am besten
+        # reward = siegpunkte 
+        alle_x = []
+        alle_y = []
+        for t in self.trajektorie:
+            zustand = t[0]
+            alle_x.append([zustand.reshape(1,(24*4+3)*12)])
+            y = t[1]
+            letzte_aktion = t[2]
+            y[letzte_aktion - 1] = self.punkte # = reward
+            alle_y.append([y.reshape(1,24)])
+        self.model.fit(np.array(alle_x).reshape(12,1,(24*4+3)*12), np.array(alle_y).reshape(12,1,24), epochs=10)
+        self.trajektorie = []
 
-        # do action
-        self.state[(player_id*12 - 1):(player_id*12 + 11), self.current_round] = card_to_play
-        self.state[96:98,0:12] = hand_cards
+    def modell_speichern(self):
+        self.model.save(self.path)
 
-        # compute rewards
-        # decide first if a trump has to be played:
-        trump_trick = False
-
-        try:
-            trump_trick = self.current_trick[0] > 11
-        except:
-            # trick is empty, therefore any card is allowed:
-            self.current_trick.append(card_to_play.index(1) + 1)
-            return self.state, reward, self.done
-
-        # update the current trick:
-        self.current_trick.append(card_to_play.index(1) + 1)
-        if len(self.current_trick) == 4:
-            self.current_round +=1
-            self.state[-1, (self.current_round - 2, self.current_round)] = [0,1]
-        # not playing trump although the player still has trump:
-        if trump_trick and (self.current_trick[-1] < 11) and (hand_cards.max() > 11):
-            reward = -9999
-            self.done = True
-
-        # not following although the player has to follow in non-trump:
-        if not trump_trick and self.must_follow(self.current_trick[0], card_to_play, hand_cards):
-            reward = -9999
-            self.done = True
-
-        if self.current_round == 12:
-            self.done = True
-        return self.state, reward, self.done
-
-    def must_follow(first_card, own_card, hand_cards) -> bool:
-        if (first_card in [1,2,3]) and not (own_card in [1,2,3]) and (len(set(hand_cards) & set([1,2,3])) > 0):
-            return True
-        if (first_card in [4,5,6,7]) and not (own_card in [4,5,6,7]) and (len(set(hand_cards) & set([4,5,6,7])) > 0):
-            return True
-        if (first_card in [8,9,10,11]) and not (own_card in [8,9,10,11]) and (len(set([hand_cards]) & set([8,9,10,11])) > 0):
-            return True
-        return False
-
-class action:
-    def __init__(self, hand_cards, card_to_play, player_id) -> None:
-        self.hand_cards = hand_cards
-        self.cars_to_play = card_to_play
-        self.player_id = player_id
 
 
 
