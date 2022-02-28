@@ -163,24 +163,24 @@ class DokoSpiel:
                 if self.spieler[i].re_partei:
                     self.spieler[i].punkte  = siegpunkte
                 else:
-                    self.spieler[i].punkte = -siegpunkte
+                    self.spieler[i].punkte = 0 # -siegpunkte
                 if type(self.spieler[i]).__name__ == "Lernender_Spieler":
                     self.spieler[i].update()
                     self.spieler[i].modell_speichern()
 
-            return siegpunkte, -siegpunkte
+            return siegpunkte, 0 # siegpunkte, -siegpunkte
         else:
             for i in range(0,4):
                 if not self.spieler[i].re_partei:
                     self.spieler[i].punkte  = siegpunkte
                 else:
-                    self.spieler[i].punkte = -siegpunkte
+                    self.spieler[i].punkte = 0 # -siegpunkte
                 if type(self.spieler[i]).__name__ == "Lernender_Spieler":
                     self.spieler[i].update()
                     self.spieler[i].modell_speichern()
                     
 
-            return -siegpunkte, siegpunkte
+            return 0, siegpunkte # -siegpunkte, siegpunkte
 
 
 
@@ -321,7 +321,7 @@ class Lernender_Spieler(Spieler):
             # print(vorhersage)
             # wähle legale Aktion mit maximalem Reward in der Vorhersage 
             while not Karte(np.argmax(vorhersage)+1) in legale_karten:
-                vorhersage[np.argmax(vorhersage)] = -9999
+                vorhersage[np.argmax(vorhersage)] = -2*abs(np.min(vorhersage))
             karte = Karte(np.argmax(vorhersage)+1)
             self.karte_spielen(karte)
             if verbose: print(self.name, karte)
@@ -344,6 +344,7 @@ class Lernender_Spieler(Spieler):
         # reward = augen_i *  0.9^i + siegpunkte * 0.9^(12-i)
         # oder am besten
         # reward = siegpunkte 
+        self.model = load_model(self.path)
         alle_x = []
         alle_y = []
         for t in self.trajektorie:
@@ -353,11 +354,12 @@ class Lernender_Spieler(Spieler):
             letzte_aktion = t[2]
             y[letzte_aktion - 1] = self.punkte # = reward
             alle_y.append([y.reshape(1,24)])
-        self.model.fit(np.array(alle_x).reshape(12,1,(24*4+3)*12), np.array(alle_y).reshape(12,1,24), epochs=10)
+        self.model.fit(np.array(alle_x).reshape(12,1,(24*4+3)*12), np.array(alle_y).reshape(12,1,24), epochs=1)
         self.trajektorie = []
+        self.model.save(self.path)
 
     def modell_speichern(self):
-        self.model.save(self.path)
+        pass
 
 
 
