@@ -306,7 +306,7 @@ class Lernender_Spieler(Spieler):
         # erhalte aktuellen Zustand
         zustand = self.spiel.get_zustand(self)
         # bekomme von Model Vorhersage für jede Aktion
-        vorhersage = self.model.predict(zustand.reshape((1,1,(4*24+3)*12))).reshape(24)
+        vorhersage = self.model.predict(zustand.reshape((1,33,36,1))).reshape(24)
         # mit Wahrscheinlichkeit self.zufallszug spiele zufällige Karte:
         if random.random() < self.zufallszug:
             id = random.randint(1, len(legale_karten)) - 1 
@@ -349,12 +349,12 @@ class Lernender_Spieler(Spieler):
         alle_y = []
         for t in self.trajektorie:
             zustand = t[0]
-            alle_x.append([zustand.reshape(1,(24*4+3)*12)])
+            alle_x.append([zustand.reshape((1,33,36,1))])
             y = t[1]
             letzte_aktion = t[2]
             y[letzte_aktion - 1] = self.punkte # = reward
             alle_y.append([y.reshape(1,24)])
-        self.model.fit(np.array(alle_x).reshape(12,1,(24*4+3)*12), np.array(alle_y).reshape(12,1,24), epochs=1)
+        self.model.fit(np.array(alle_x).reshape(12,33,36,1), np.array(alle_y).reshape(12,1,24), epochs=1)
         self.trajektorie = []
         self.model.save(self.path)
 

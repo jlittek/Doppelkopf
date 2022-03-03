@@ -1,4 +1,3 @@
-from cv2 import line
 import numpy as np
 from Doppelkopf  import DokoSpiel, Spieler, Strategie_Spieler
 import matplotlib.pyplot as plt
@@ -10,16 +9,16 @@ from Doppelkopf import Lernender_Spieler
 
 re = 0
 kontra = 0
-wiederholungen = 100
+wiederholungen = 200
 x = np.array(range(1, wiederholungen + 2))
 p1 = np.zeros(wiederholungen+1)
 p2 = np.zeros(wiederholungen+1)
 p3 = np.zeros(wiederholungen+1)
 p4 = np.zeros(wiederholungen+1)
 
-s1 = Lernender_Spieler('A', './Doppelkopf/model_4_Spieler.h5', wkeit_zufallszug = 0.25)
-s2 = Lernender_Spieler('B', './Doppelkopf/model_4_Spieler.h5', wkeit_zufallszug = 0.25)
-s3 = Lernender_Spieler('C', './Doppelkopf/model_4_Spieler.h5', wkeit_zufallszug = 0.25)
+s1 = Lernender_Spieler('A', 'cnn_1.h5', wkeit_zufallszug = 0.25)
+s2 = Lernender_Spieler('B', 'cnn_1.h5', wkeit_zufallszug = 0.25)
+s3 = Lernender_Spieler('C', 'cnn_1.h5', wkeit_zufallszug = 0.25)
 # s1 = Spieler('A')
 # s2 = Spieler('B')
 # s3 = Spieler('C')
@@ -33,7 +32,8 @@ line1, = ax.plot(x, p1, 'g-')
 line2, = ax.plot(x, p2, 'r-')
 line3, = ax.plot(x, p3, 'y-')
 line4, = ax.plot(x, p4, 'b-')
-  
+ax.legend(["Spieler 1", "Spieler 2", "Spieler 3", "Spieler 4"])
+
 # setting x-axis label and y-axis label
 plt.xlabel("Spiel")
 plt.ylabel("Punkte")
@@ -69,6 +69,5 @@ print(re/wiederholungen, kontra/wiederholungen)
 # ax.plot(x, p3)
 # ax.plot(x, p4)
 # ax.legend(["Spieler 1", "Spieler 2", "Spieler 3", "Spieler 4"])
-
-plt.savefig(f'./Doppelkopf/3_hidden_3v1_Spieler_{wiederholungen}.png'.format())
+plt.savefig(f'./Doppelkopf/3_hidden_3v1_Spieler_cnn_{wiederholungen}.png'.format())
 # plt.show()
