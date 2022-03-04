@@ -132,14 +132,6 @@ class DokoSpiel:
             self.alle_stiche.append(self.aktueller_stich)
             self.aktueller_stich = []
 
-            # für alle lernenden Spieler Reward zurückgeben, um deren Gewichte anpassen zu können
-            # for s in self.spieler:
-            #     if type(s).__name__ == "Lernender_Spieler":
-            #         if self.spieler.index(s) == gewinner_id:
-            #             s.update(wert_aktueller_stich)
-            #         else:
-            #             s.update(0)
-
 
 
         # Ende des Spiels, Punkte zusammenzählen:
@@ -330,20 +322,8 @@ class Lernender_Spieler(Spieler):
             return karte
 
     def update(self):
-        # update Model mit dem Reward und der zuvor ausgeführten Aktion
-        # y = self.letzte_vorhersage
-        # y[self.letzte_aktion - 1] = reward
-        # self.model.fit(self.letzter_zustand.reshape(1,1,(24*4+3)*12), y.reshape(1,1,24))
+        # update Model mit dem Reward und der zuvor ausgeführten Aktionen
 
-        # neu: update nach dem Spiel für alle Züge
-        #  i. Stich  wird belohnt mit:
-        # reward = augen_i/30 * 0.5^i + siegpunkte * 1/0.5^i
-        # oder
-        # reward = augen_i/30 * (1 - i/12) + siegpunkte * i/12
-        # oder 
-        # reward = augen_i *  0.9^i + siegpunkte * 0.9^(12-i)
-        # oder am besten
-        # reward = siegpunkte 
         self.model = load_model(self.path)
         alle_x = []
         alle_y = []
@@ -358,8 +338,6 @@ class Lernender_Spieler(Spieler):
         self.trajektorie = []
         self.model.save(self.path)
 
-    def modell_speichern(self):
-        pass
 
 
 

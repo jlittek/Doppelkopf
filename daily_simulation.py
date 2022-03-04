@@ -1,0 +1,36 @@
+from datetime import datetime
+import pandas as pd
+from Doppelkopf import DokoSpiel, Spieler, Lernender_Spieler
+import numpy as np
+
+# set up 3 learning agents and 1 random player:
+path = 'models/model_1.h5'
+player_1 = Lernender_Spieler('Player 1', path=path)
+player_2 = Lernender_Spieler('Player 2', path=path)
+player_3 = Lernender_Spieler('Player 3', path=path)
+player_4 = Spieler('Player 4')
+
+# set up a game instance and assign the players:
+game = DokoSpiel(player_1, player_2, player_3, player_4)
+
+# let the agents play several repetitions and save their scores:
+repetitions = 100
+score_player_1 = []
+score_player_2 = []
+score_player_3 = []
+score_player_4 = []
+for r in range(0, repetitions):
+    re, kontra = game.spielen()
+    score_player_1.append(player_1.punkte)
+    score_player_2.append(player_2.punkte)
+    score_player_3.append(player_3.punkte)
+    score_player_4.append(player_4.punkte)
+
+
+dates = np.full((repetitions), datetime.today().date())
+scores = pd.read_csv('simulation_scores/scores.csv')
+new_scores = pd.DataFrame({'Date': dates, 'Player 1': score_player_1, 'Player 2': score_player_2, 'Player 3': score_player_3, 'Player 4': score_player_4})
+scores = pd.concat([scores, new_scores])
+scores.to_csv('simulation_scores/scores.csv')
+
+

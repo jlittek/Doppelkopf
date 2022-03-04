@@ -1,8 +1,7 @@
 import numpy as np
-from Doppelkopf  import DokoSpiel, Spieler, Strategie_Spieler
+from Doppelkopf  import DokoSpiel, Spieler, Lernender_Spieler
 import matplotlib.pyplot as plt
 
-from Doppelkopf import Lernender_Spieler
 
 
 # Simulation mit zufälliger Spielweise und lernenden Spielern

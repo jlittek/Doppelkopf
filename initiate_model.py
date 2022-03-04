@@ -45,9 +45,4 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.MeanSquaredError(),
               metrics=['mse'])
 
-# test = np.zeros((1,33,36,1))
-
-# prediction = model.predict(test)
-# print(prediction)
-
-model.save('cnn_1.h5')
+model.save('models/model_1.h5')
