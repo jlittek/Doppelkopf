@@ -2,7 +2,7 @@ name: daily_rountine
   
 on:
   schedule:
-    - cron: "0 0 0/1 1/1 * ? *"
+    - cron: "0 0 * ? * *"
 
 jobs:
   build:
