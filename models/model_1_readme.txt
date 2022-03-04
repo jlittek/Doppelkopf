@@ -13,7 +13,8 @@ model.add(layers.Flatten())
 model.add(layers.Dense(64, activation='relu'))
 model.add(layers.Dense(24))
 
-model.compile(optimizer='adam',
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-6, beta_1=0.9, beta_2=0.98, 
+                                     epsilon=1e-9),
               loss=tf.keras.losses.MeanSquaredError(),
               metrics=['mse'])
 
