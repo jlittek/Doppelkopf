@@ -27,7 +27,7 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
-          git add scores.csv
+          git add simulation_scores/scores.csv
           git add models/model_1.h5
           git commit -m "new simulation commit"
           git push origin master
