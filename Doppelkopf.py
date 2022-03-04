@@ -158,7 +158,7 @@ class DokoSpiel:
                     self.spieler[i].punkte = 0 # -siegpunkte
                 if type(self.spieler[i]).__name__ == "Lernender_Spieler":
                     self.spieler[i].update()
-                    self.spieler[i].modell_speichern()
+
 
             return siegpunkte, 0 # siegpunkte, -siegpunkte
         else:
@@ -169,7 +169,7 @@ class DokoSpiel:
                     self.spieler[i].punkte = 0 # -siegpunkte
                 if type(self.spieler[i]).__name__ == "Lernender_Spieler":
                     self.spieler[i].update()
-                    self.spieler[i].modell_speichern()
+ 
                     
 
             return 0, siegpunkte # -siegpunkte, siegpunkte
