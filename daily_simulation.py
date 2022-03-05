@@ -2,6 +2,8 @@ from datetime import datetime
 import pandas as pd
 from Doppelkopf import DokoSpiel, Spieler, Lernender_Spieler
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 # set up 3 learning agents and 1 random player:
 path = 'models/model_1.h5'
@@ -31,6 +33,11 @@ dates = np.full((repetitions), datetime.today().date())
 scores = pd.read_csv('simulation_scores/scores.csv')
 new_scores = pd.DataFrame({'Date': dates, 'Player 1': score_player_1, 'Player 2': score_player_2, 'Player 3': score_player_3, 'Player 4': score_player_4})
 scores = pd.concat([scores, new_scores])
-scores.to_csv('simulation_scores/scores.csv')
+scores.to_csv('simulation_scores/scores.csv', index = False)
 
-
+cumsum = scores[['Player 1', 'Player 2', 'Player 3', 'Player 4']].cumsum()
+fig = plt.plot(cumsum)
+plt.legend(cumsum.columns)
+plt.xlabel('Games')
+plt.ylabel('Total points')
+plt.savefig('simulation_scores/scores.jpg')
