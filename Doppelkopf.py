@@ -328,7 +328,6 @@ class Lernender_Spieler(Spieler):
     def update(self):
         # update Model mit dem Reward und der zuvor ausgeführten Aktionen
 
-        self.model = load_model(self.path)
         alle_x = []
         alle_y = []
         for t in self.trajektorie:
