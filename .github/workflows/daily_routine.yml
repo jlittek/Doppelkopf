@@ -30,5 +30,6 @@ jobs:
           # Stage the file, commit and push
           git add simulation_scores/scores.csv
           git add models/model_1.h5
+          git add simulation_scores/scores.png
           git commit -m "new simulation commit"
           git push origin master
