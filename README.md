@@ -1,4 +1,4 @@
-# Title
+# Learning Doppelkopf with reinforcement learning and artificial neural networks
 
 ![Scores](simulation_scores/scores.jpg?raw=true "Total scores")
 
