@@ -18,7 +18,7 @@ player_4 = Spieler('Player 4')
 game = DokoSpiel(player_1, player_2, player_3, player_4)
 
 # let the agents play several repetitions and save their scores:
-repetitions = 100
+repetitions = 1000
 score_player_1 = []
 score_player_2 = []
 score_player_3 = []
