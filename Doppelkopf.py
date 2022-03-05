@@ -76,6 +76,7 @@ class DokoSpiel:
         a, b, c, d = Karten.geben()
         l = [a,b,c,d]
         self.spieler = [spieler_1, spieler_2, spieler_3, spieler_4]
+        self.order = [spieler_1, spieler_2, spieler_3, spieler_4]
         for s, k in zip(self.spieler, l):
             s.karten_aufnehmen(k)
             s.set_spielreferenz(self)
@@ -148,7 +149,10 @@ class DokoSpiel:
             print(f"Re-Partei: {re} Augen, Kontra: {kontra} Augen, es gewinnt {sieger} mit {siegpunkte} Punkten.".format())
         
         # Spiel zurücksetzen:
+        self.order.append(self.order.pop(0))
+        self.spieler = self.order
         self.__init__(self.spieler[0], self.spieler[1],self.spieler[2],self.spieler[3], self.verbose)
+
 
         if sieger == "Re":
             for i in range(0,4):
@@ -284,9 +288,9 @@ class Menschlicher_Spieler(Spieler):
 
 class Lernender_Spieler(Spieler):
     
-    def __init__(self, name, path='path/to/location/of/model', wkeit_zufallszug=0.25) -> None:
+    def __init__(self, name, model, path='path/to/location/of/model', wkeit_zufallszug=0.25) -> None:
         # Model laden
-        self.model = load_model(path)
+        self.model = model # load_model(path)
         self.path = path
         self.zufallszug = wkeit_zufallszug
         self.trajektorie = [] # Liste mit Zustand in jedem Zug, Vorhersage und ausgewählter Aktion
@@ -336,7 +340,6 @@ class Lernender_Spieler(Spieler):
             alle_y.append([y.reshape(1,24)])
         self.model.fit(np.array(alle_x).reshape(12,33,36,1), np.array(alle_y).reshape(12,1,24), epochs=1)
         self.trajektorie = []
-        self.model.save(self.path)
 
 
 

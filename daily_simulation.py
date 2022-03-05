@@ -3,13 +3,15 @@ import pandas as pd
 from Doppelkopf import DokoSpiel, Spieler, Lernender_Spieler
 import numpy as np
 import matplotlib.pyplot as plt
+from keras.models import load_model
 
 
 # set up 3 learning agents and 1 random player:
 path = 'models/model_1.h5'
-player_1 = Lernender_Spieler('Player 1', path=path)
-player_2 = Lernender_Spieler('Player 2', path=path)
-player_3 = Lernender_Spieler('Player 3', path=path)
+model = load_model(path)
+player_1 = Lernender_Spieler('Player 1', model)
+player_2 = Lernender_Spieler('Player 2', model)
+player_3 = Lernender_Spieler('Player 3', model)
 player_4 = Spieler('Player 4')
 
 # set up a game instance and assign the players:
@@ -28,6 +30,7 @@ for r in range(0, repetitions):
     score_player_3.append(player_3.punkte)
     score_player_4.append(player_4.punkte)
 
+model.save(path)
 
 dates = np.full((repetitions), datetime.today().date())
 scores = pd.read_csv('simulation_scores/scores.csv')
