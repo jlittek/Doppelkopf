@@ -1,4 +1,4 @@
-name: daily_rountine
+name: daily_rountine_2
   
 on:
   schedule:
