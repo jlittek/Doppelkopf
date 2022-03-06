@@ -129,7 +129,7 @@ class DokoSpiel:
             # Augen als reward speichern:
             self.spieler[gewinner_id].reward_list.append(wert_aktueller_stich) 
             for s in np.delete(self.spieler, gewinner_id):
-                s.reward_liste.append(0)
+                s.reward_list.append(0)
 
             # neue Zugreihenfolge festlegen:
             for i in range(0,gewinner_id):

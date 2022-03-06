@@ -1,9 +1,9 @@
 name: daily_rountine_2
   
 on:
-  push:
-    branches:
-      - trainingwithtrickvalue
+  schedule:
+    - cron: "15 * * * *"
+
 
 jobs:
   build:
