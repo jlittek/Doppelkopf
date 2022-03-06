@@ -1,5 +1,5 @@
 # Learning Doppelkopf with reinforcement learning and artificial neural networks
-
+## Same model topology, but different reward function in the training for comparison
 ![Scores](simulation_scores/scores_2.jpg?raw=true "Total scores")
 
 ## Problem/Task:
