@@ -3,6 +3,8 @@ name: daily_rountine_2
 on:
   schedule:
     - cron: "15 * * * *"
+    branches:
+      - trainingwithtrickvalue
 
 jobs:
   build:
@@ -32,4 +34,4 @@ jobs:
           git add models/model_2.h5
           git add simulation_scores/scores_2.jpg
           git commit -m "new simulation commit"
-          git push origin master
+          git push origin trainingwithtrickvalue
