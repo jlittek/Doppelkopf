@@ -1,4 +1,4 @@
-name: daily_rountine
+name: master-workflow
   
 on:
   schedule:
