@@ -126,6 +126,11 @@ class DokoSpiel:
             if self.verbose: print(f"Der {i}. Stich hat eine Augenzahl von {wert_aktueller_stich}, Spieler {self.spieler[gewinner_id].name} gewinnt den Stich.".format())
             # Augen dem Gewinner gutschreiben:
             self.spieler[gewinner_id].augen += wert_aktueller_stich
+            # Augen als reward speichern:
+            self.spieler[gewinner_id].reward_list.append(wert_aktueller_stich) 
+            for s in np.delete(self.spieler, gewinner_id):
+                s.reward_liste.append(0)
+
             # neue Zugreihenfolge festlegen:
             for i in range(0,gewinner_id):
                 self.spieler.append(self.spieler.pop(0))
@@ -159,24 +164,24 @@ class DokoSpiel:
                 if self.spieler[i].re_partei:
                     self.spieler[i].punkte  = siegpunkte
                 else:
-                    self.spieler[i].punkte = 0 # -siegpunkte
+                    self.spieler[i].punkte =  -siegpunkte
                 if type(self.spieler[i]).__name__ == "Lernender_Spieler":
                     self.spieler[i].update()
 
 
-            return siegpunkte, 0 # siegpunkte, -siegpunkte
+            return  siegpunkte, -siegpunkte
         else:
             for i in range(0,4):
                 if not self.spieler[i].re_partei:
                     self.spieler[i].punkte  = siegpunkte
                 else:
-                    self.spieler[i].punkte = 0 # -siegpunkte
+                    self.spieler[i].punkte = -siegpunkte
                 if type(self.spieler[i]).__name__ == "Lernender_Spieler":
                     self.spieler[i].update()
  
                     
 
-            return 0, siegpunkte # -siegpunkte, siegpunkte
+            return -siegpunkte, siegpunkte
 
 
 
@@ -219,6 +224,7 @@ class Spieler:
         self.augen = 0
         self.re_partei = False
         self.punkte = 0
+        self.reward_list = []
 
     def karten_aufnehmen(self, karten):
         self.handkarten = karten
@@ -330,12 +336,12 @@ class Lernender_Spieler(Spieler):
 
         alle_x = []
         alle_y = []
-        for t in self.trajektorie:
-            zustand = t[0]
+        for i in range(0, len(self.trajektorie)):
+            zustand = self.trajektorie[i][0]
             alle_x.append([zustand.reshape((1,33,36,1))])
-            y = t[1]
-            letzte_aktion = t[2]
-            y[letzte_aktion - 1] = self.punkte # = reward
+            y = self.trajektorie[i][1]
+            letzte_aktion = self.trajektorie[i][2]
+            y[letzte_aktion - 1] = self.reward_list[i] + 30*self.punkte # = reward
             alle_y.append([y.reshape(1,24)])
         self.model.fit(np.array(alle_x).reshape(12,33,36,1), np.array(alle_y).reshape(12,1,24), epochs=1)
         self.trajektorie = []

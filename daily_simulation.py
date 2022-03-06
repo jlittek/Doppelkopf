@@ -7,7 +7,7 @@ from keras.models import load_model
 
 
 # set up 3 learning agents and 1 random player:
-path = 'models/model_1.h5'
+path = 'models/model_2.h5'
 model = load_model(path)
 player_1 = Lernender_Spieler('Player 1', model)
 player_2 = Lernender_Spieler('Player 2', model)
@@ -33,14 +33,14 @@ for r in range(0, repetitions):
 model.save(path)
 
 dates = np.full((repetitions), datetime.today().date())
-scores = pd.read_csv('simulation_scores/scores.csv')
+scores = pd.read_csv('simulation_scores/scores_2.csv')
 new_scores = pd.DataFrame({'Date': dates, 'Player 1': score_player_1, 'Player 2': score_player_2, 'Player 3': score_player_3, 'Player 4': score_player_4})
 scores = pd.concat([scores, new_scores])
-scores.to_csv('simulation_scores/scores.csv', index = False)
+scores.to_csv('simulation_scores/scores_2.csv', index = False)
 
 cumsum = scores[['Player 1', 'Player 2', 'Player 3', 'Player 4']].cumsum()
 fig = plt.plot(cumsum)
 plt.legend(cumsum.columns)
 plt.xlabel('Games')
 plt.ylabel('Total points')
-plt.savefig('simulation_scores/scores.jpg')
+plt.savefig('simulation_scores/scores_2.jpg')

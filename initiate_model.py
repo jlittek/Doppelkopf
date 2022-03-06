@@ -46,4 +46,4 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-6, beta_1=0.9,
               loss=tf.keras.losses.MeanSquaredError(),
               metrics=['mse'])
 
-model.save('models/model_1.h5')
+model.save('models/model_2.h5')

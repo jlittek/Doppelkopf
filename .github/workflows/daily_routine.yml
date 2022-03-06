@@ -2,7 +2,7 @@ name: daily_rountine
   
 on:
   schedule:
-    - cron: "45 * * * *"
+    - cron: "15 * * * *"
 
 jobs:
   build:
@@ -29,7 +29,7 @@ jobs:
         run: |
           # Stage the file, commit and push
           git add simulation_scores/scores.csv
-          git add models/model_1.h5
-          git add simulation_scores/scores.jpg
+          git add models/model_2.h5
+          git add simulation_scores/scores_2.jpg
           git commit -m "new simulation commit"
           git push origin master
