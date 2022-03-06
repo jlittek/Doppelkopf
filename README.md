@@ -1,6 +1,6 @@
 # Learning Doppelkopf with reinforcement learning and artificial neural networks
 
-![Scores](simulation_scores/scores.jpg?raw=true "Total scores")
+![Scores](simulation_scores/scores_2.jpg?raw=true "Total scores")
 
 ## Problem/Task:
 Build (very) strong computer opponents for the game with reinforcement learning. 
