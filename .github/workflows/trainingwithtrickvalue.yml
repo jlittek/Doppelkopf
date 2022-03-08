@@ -34,6 +34,6 @@ jobs:
           # Stage the file, commit and push
           git add simulation_scores/scores_2.csv
           git add models/model_2.h5
-          git add simulation_scores/scores_2.pdf
+          git add simulation_scores/scores_2.jpg
           git commit -m "new simulation commit"
           git push origin trainingwithtrickvalue
