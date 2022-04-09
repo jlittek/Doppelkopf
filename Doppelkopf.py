@@ -294,7 +294,7 @@ class Menschlicher_Spieler(Spieler):
 
 class Lernender_Spieler(Spieler):
     
-    def __init__(self, name, model, path='path/to/location/of/model', wkeit_zufallszug=0.25) -> None:
+    def __init__(self, name, model, path='path/to/location/of/model', wkeit_zufallszug=0) -> None:
         # Model laden
         self.model = model # load_model(path)
         self.path = path
